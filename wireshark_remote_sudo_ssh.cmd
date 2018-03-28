@@ -61,14 +61,14 @@ set timeout="15"
 
 echo Please enter password of %user% again, wireshark will start in %timeout% seconds.
 rem Starting wireshark server in host
-START /B plink -t -ssh -l admin -pw %password% %host% sudo -- sh -c 'rm -f /tmp/test.fifo; mkfifo /tmp/test.fifo; chmod +r /tmp/test.fifo; /usr/sbin/tcpdump -i any -w /tmp/test.fifo -s 0 not port 22; rm -f /tmp/test.fifo'
+START /B plink -t -ssh -l %user% -pw %password% %host% sudo -- sh -c 'rm -f /tmp/test.fifo; mkfifo /tmp/test.fifo; chmod +r /tmp/test.fifo; /usr/sbin/tcpdump -i any -w /tmp/test.fifo -s 0 not port 22; rm -f /tmp/test.fifo'
 timeout %timeout% > NUL
 
 set commands_client="'cat /tmp/test.fifo' | %wireshark% -k -i -"
 
 rem Run tcpdump with output to pipe and read pipe from wireshark
 echo Starting WireShark Application
-%plink% -ssh -l admin -pw %password% %host% "cat /tmp/test.fifo" | %wireshark% -k -i -
+%plink% -ssh -l %user% -pw %password% %host% "cat /tmp/test.fifo" | %wireshark% -k -i -
 
 cls
 echo Closing, please wait a while
