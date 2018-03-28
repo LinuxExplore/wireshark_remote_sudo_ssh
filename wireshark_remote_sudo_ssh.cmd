@@ -1,4 +1,6 @@
 @echo off
+rem Initial script version 1.0.0
+rem For more tips and trick visit hhtp://linuxexplore.com
 
 rem Figure out path to plink.exe
 set plink="plink.exe"
@@ -30,10 +32,10 @@ if not defined host (
 rem interface for tcpdump capture
 set iface=any
 
-rem Default to a sensible pattern if not specified as the third parameter
+rem Default pattern
 set pattern="not host %host% and not host 127.0.0.1 and not port 22"
 
-rem Ask for user
+rem Ask for user if not specified as second parameter
 set user=%2
 if not defined user (
     set /p user= Enter the sudoer username of %host%: 
@@ -44,7 +46,7 @@ if not defined user (
 	exit /b 1
 )
 
-rem Ask for password
+rem Ask for password if not specified as third parameter
 set password=%3
 if not defined password (
     set /p password= Enter the password of %user%: 
@@ -56,15 +58,12 @@ if not defined password (
 	exit /b 1
 )
 
-set commands_srv="mkfifo /tmp/test.fifo; chmod +r /tmp/test.fifo; sudo -- sh -c '/usr/sbin/tcpdump -i any -w /tmp/test.fifo -s 0 not port 22; rm -f /tmp/test.fifo'"
 set timeout="15"
 
 echo Please enter password of %user% again, wireshark will start in %timeout% seconds.
 rem Starting wireshark server in host
 START /B plink -t -ssh -l %user% -pw %password% %host% sudo -- sh -c 'rm -f /tmp/test.fifo; mkfifo /tmp/test.fifo; chmod +r /tmp/test.fifo; /usr/sbin/tcpdump -i any -w /tmp/test.fifo -s 0 not port 22; rm -f /tmp/test.fifo'
 timeout %timeout% > NUL
-
-set commands_client="'cat /tmp/test.fifo' | %wireshark% -k -i -"
 
 rem Run tcpdump with output to pipe and read pipe from wireshark
 echo Starting WireShark Application
